@@ -9,6 +9,8 @@ def rowConn():
     conn.row_factory = sqlite3.Row
     return conn
 
+# Execute SQL in sql and return list of numerically-indexed records
+# Preferable for querying just one field from the DB
 def dbQry(sql, *parameters):
     conn = conn()
     c = conn.cursor()
@@ -16,6 +18,8 @@ def dbQry(sql, *parameters):
     conn.close()
     return qry
 
+# Like dbQry, but each row in the list supports dict-like subscripts.
+# Useful for multiple-field queries.
 def dbRowQry(sql, *parameters):
     conn = rowConn()
     c = conn.cursor()
@@ -24,9 +28,14 @@ def dbRowQry(sql, *parameters):
     return qry
 
 def dbIsPlayer(player_id):
-    record = curs().execute("SELECT player_id FROM players WHERE player_id=?",
-        player_id).fetchone()
+    player = dbQry("SELECT player_id FROM players WHERE player_id=?",
+            player_id)
     return bool(player)
+
+def dbPlayerName(player_id):
+    player_name = dbQry("SELECT player_name FROM players WHERE player_id=?",
+            player_id)
+    return player_name
 
 def dbAddPlayer(player_name):
     conn = conn()

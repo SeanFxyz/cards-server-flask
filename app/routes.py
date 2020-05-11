@@ -2,9 +2,15 @@ from app import app
 from flask import (render_template, render_template_string, request,
         session, send_from_directory, send_file, url_for)
 import os, sqlite3, json, re
+from enum import Enum 
 
 from app.db_helpers import *
 from app.cards_helpers import *
+
+class State(Enum):
+    LOBBY = 0
+    PROMPT = 1
+    SELECT = 2
 
 with open("secretkey") as keyfile:
     app.secret_key = keyfile.readline()
@@ -44,9 +50,12 @@ def joinGame():
         game_id = request.form["game_id"]
         player_id = request.form["player_id"]
         passwd = request.form["password"]
-        if dbCheckPass(game_id, passwd):
-            dbAddSession(player_id, game_id)
-            return "SUCCESS\n"
+        state = dbRowQry("SELECT state FROM games WHERE game_id=?")[0]["state"]
+
+        if(State(state) == State.LOBBY and
+                dbCheckPass(game_id, passwd) and dbIsGameOpen(game_id):
+            dbAddSession(player_id, game_id):
+            return "SUCCESS"
         return "FAIL"
 
 @app.route("/qry", methods=["POST"])
@@ -56,9 +65,18 @@ def qryGame():
         player_id = request.form["player_id"]
         if dbIsSession(game_id, player_id):
             qry = dict(dbRowQry("SELECT * FROM games WHERE game_id=?", game_id)[0])
+
             playerQry = dbQry("SELECT player_id FROM sessions WHERE game_id=?",
                     game_id)
-            # TODO: convert playerQry to plain list of players
+            qry["players"] = {}
+            for p in [row[0] for row in playerQry]:
+                qry["players"][p] = dbPlayerName(p)
+
+            cardQry = dbRowQry("SELECT (card_id, text) FROM cards WHERE \
+                    game_id=? AND player_id=?",
+                    game_id, player_id)
+            qry["cards"] = [dict(row) for row in cardQry]
+
             qry_json = json.dumps(qry)
             return "SUCCESS\n" + qry_json
         
