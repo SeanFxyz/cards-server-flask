@@ -37,7 +37,7 @@ def createGame():
     if request.method == "POST":
         game_name = request.form["game_name"]
         player_id = request.form["player_id"]
-        hidden = int(reqeust.form["hidden"])
+        hidden = int(request.form["hidden"])
         if dbIsPlayer(player_id):
             game_id = dbAddGame(game_name, player_id, hidden)
             return "SUCCESS\n" + game_id
@@ -53,8 +53,8 @@ def joinGame():
         state = dbRowQry("SELECT state FROM games WHERE game_id=?")[0]["state"]
 
         if(State(state) == State.LOBBY and
-                dbCheckPass(game_id, passwd) and dbIsGameOpen(game_id):
-            dbAddSession(player_id, game_id):
+                dbCheckPass(game_id, passwd) and dbIsGameOpen(game_id)):
+            dbAddSession(player_id, game_id)
             return "SUCCESS"
         return "FAIL"
 
@@ -64,7 +64,7 @@ def qryGame():
         game_id = request.form["game_id"]
         player_id = request.form["player_id"]
         if dbIsSession(game_id, player_id):
-            qry = dict(dbRowQry("SELECT * FROM games WHERE game_id=?", game_id)[0])
+            qry = dict(dbGetGame(game_id))
 
             playerQry = dbQry("SELECT player_id FROM sessions WHERE game_id=?",
                     game_id)
@@ -72,15 +72,46 @@ def qryGame():
             for p in [row[0] for row in playerQry]:
                 qry["players"][p] = dbPlayerName(p)
 
-            cardQry = dbRowQry("SELECT (card_id, text) FROM cards WHERE \
+            cardQry = dbRowQry("SELECT (card_id, text) FROM player_cards WHERE \
                     game_id=? AND player_id=?",
                     game_id, player_id)
             qry["cards"] = [dict(row) for row in cardQry]
+
+            if(State(qry["state"]) == State.SELECT and
+                    player_id == qry["czar"]):
+                qry["subs"] = dbGetSubs(game_id)
 
             qry_json = json.dumps(qry)
             return "SUCCESS\n" + qry_json
         
         return "FAIL\n"
+
+@app.route("/start", methods=["POST"])
+def startGame():
+    if request.method == "POST":
+        game_id = request.form["game_id"]
+        player_id = request.form["player_id"]
+
+        gameQry = dbGetGame(game_id)
+        if gameQry["host"] == player_id:
+            if State(gameQry["state"]) == State.LOBBY:
+                if dbUpdateGame(game_id, {"state":State.PROMPT.value}):
+                    return "SUCCESS"
+                return "FAIL"
+            return "FAIL\nGame already started"
+
+        return "FAIL\nYou are not the host."
+
+@app.route("/submit", methods=["POST"])
+def submit():
+    if request.method == "POST":
+        game_id = request.form["game_id"]
+        player_id = request.form["player_id"]
+        sub = request.form["sub"]
+        sub_json = json.loads(sub)
+
+        dbAddSub(game_id, player_id, sub_json)
+
 
 @app.route("/games")
 def getGames():

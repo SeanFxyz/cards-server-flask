@@ -32,6 +32,9 @@ def dbIsPlayer(player_id):
             player_id)
     return bool(player)
 
+def dbGetPlayers(game_id):
+    qry = dbRowQry("SELECT * FROM players WHERE game_id=?", game_id)
+
 def dbPlayerName(player_id):
     player_name = dbQry("SELECT player_name FROM players WHERE player_id=?",
             player_id)
@@ -77,7 +80,7 @@ def dbRmPlayer(player_id):
     c.execute("DELETE FROM sessions WHERE player_id=?", player_id)
     conn.commit().close()
 
-def dbAddGame(game_name, host_player_id, passwd="", hidden=0):
+def dbAddGame(game_name, host_player_id, passwd="", hidden=0, decks=""):
     conn = conn()
     c = conn.cursor()
     game_ids = []
@@ -89,14 +92,30 @@ def dbAddGame(game_name, host_player_id, passwd="", hidden=0):
     while game_id in game_ids:
         game_id = secrets.token_hex(4)
 
+    # For testing
+    decks = json.dumps(["ZG5QC"])
+
     c.execute(
-            "INSERT INTO games (game_id, game_name, host, hidden) \
-                    VALUES (?,?,?,?)",
-            game_id, game_name, host_player_id, hidden)
+            "INSERT INTO games \
+                    (game_id, game_name, host, hidden, decks) \
+                    VALUES (?,?,?,?,?)",
+            game_id, game_name, host_player_id, hidden, decks)
 
     conn.commit().close()
 
     return game_id
+
+def dbGetGame(game_id):
+    return dbRowQry("SELECT * FROM games WHERE game_id=?", game_id)[0]
+
+def dbUpdateGame(game_id, data={}):
+    conn = sqlite3.connect()
+    c = conn.cursor()
+    for a in args.keys():
+        c.execute("UPDATE games SET " + a + "=? WHERE game_id=?", args[a],
+                game_id)
+    conn.commit().close()
+    return True
 
 def dbRmGame(game_id):
     conn = conn()
