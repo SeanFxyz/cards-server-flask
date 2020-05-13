@@ -49,7 +49,7 @@ Accepts a GET request, returns all existing games as a list of dictionaries enco
 * `session_id`
 * `game_id`
 
-Takes a `session_id` as authentication and returns a JSON-encoded data structure with the following layout:
+Takes a `session_id` as authentication and returns a JSON string that decodes to a dictionary with the following layout:
 ```
 Keys:
     game_id: str
