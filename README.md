@@ -80,6 +80,7 @@ Keys:
                 Keys:
                     response_id: str
                     text: str (JSON-encoded list of strings)
+'''
 
 /cmd
 ----
