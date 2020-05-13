@@ -121,6 +121,7 @@ def qryGame():
                                 WHERE response_id=?", card)[0]["text"]
                         sub_cards.append({"response_id":card, "text":card_text})
 
+                    # TODO: hide player_id values of subs from czar
                     qry["subs"].append({
                         "player_id": row["player_id"],
                         "cards": sub_cards})
@@ -216,6 +217,5 @@ def command():
             scheduler.start()
 
             atexit.register(lambda: scheduler.shutdown())
-
 
             return "SUCCESS"
