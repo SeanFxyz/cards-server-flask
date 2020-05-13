@@ -92,10 +92,10 @@ def qryGame():
             # the form of a list of dictionaries.
             # Each dict has "card_id" mapped to a card_id and "text" mapped to
             # a list of strings (should be just one for responses).
-            player_card_qry = dbRowQry("SELECT (card_id) FROM player_cards \
+            player_card_qry = dbRowQry("SELECT card_id FROM player_cards \
                     WHERE game_id=? AND player_id=?", game_id, player_id)
             player_cards = [row["card_id"] for row in player_card_qry]
-            game_cards = dbRowQry("SELECT (response_id, text) FROM responses")
+            game_cards = dbRowQry("SELECT response_id, text FROM responses")
             card_list = [dict(row) for row in game_cards
                     if row["response_id"] in player_cards]
             qry["cards"] = card_list

@@ -1,5 +1,7 @@
 import sqlite3
 
+# Cleans up the database.
+
 conn = sqlite3.connect('cards.db')
 c = conn.cursor()
 c.execute("DELETE FROM games")
