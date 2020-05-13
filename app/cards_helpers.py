@@ -1,8 +1,15 @@
 import sqlite3, json
 from random import randrange
 from math import ceil
+from enum import Enum
 
 from app.db_helpers import *
+
+class State(Enum):
+    LOBBY = 0
+    PROMPT = 1
+    SELECT = 2
+    DISPLAY = 3
 
 def deal(game_id, hand_size):
     game_qry = dbGetGame(game_id)
@@ -47,6 +54,14 @@ def checkHost(game_id):
         new_host_id = session_data[randint(0, len(session_data))]["player_id"]
         dbUpdateGame(game_id, {"host": new_host_id})
 
+def incState(game_id):
+    game_data = dbGetGame(game_id)
+
+    state = game_data["state"]
+    state = (state + 1) % (State.DISPLAY.value + 1)
+
+    dbUpdateGame(game_id, {"state":state})
+
 def promptStateSetup(game_id):
 
     dbClearSubs(game_id)
@@ -61,11 +76,11 @@ def promptStateSetup(game_id):
     czar_i = 0
     for n in range(1, len(players)):
         if players[n] == game_qry["czar"]:
-            czar_i = n
+            czar_i = (n + 1) % len(players)
 
     new_czar = players[czar_i]
 
-    dbUpdateGame(game_id, {"czar":players[n]})
+    dbUpdateGame(game_id, {"czar":new_czar})
 
     game_calls = []
     for deck in game_decks:

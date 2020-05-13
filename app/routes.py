@@ -4,14 +4,14 @@ from flask import (render_template, render_template_string, request,
 import os, sqlite3, json, re
 from enum import Enum 
 
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
+import time
+import atexit
+
 from app.db_helpers import *
 from app.cards_helpers import *
 
-class State(Enum):
-    LOBBY = 0
-    PROMPT = 1
-    SELECT = 2
-    DISPLAY = 3
 
 with open("secretkey") as keyfile:
     app.secret_key = keyfile.readline()
@@ -216,5 +216,13 @@ def command():
 
             sel = args[0]
             dbUpdateGame(game_id,{"selection":sel, "state":State.DISPLAY.value})
+
+            scheduler = BackgroundScheduler()
+            scheduler.add_job(func=incState, args=(game_id,), trigger="date",
+                    run_date=datetime.fromtimestamp(time.time() + 15))
+            scheduler.start()
+
+            atexit.register(lambda: scheduler.shutdown())
+
 
             return "SUCCESS"
