@@ -25,14 +25,6 @@ def login():
     else:
         return "FAIL"
 
-@app.route("/logout", methods=["POST"])
-def logout():
-    if request.method == "POST":
-        dbRmPlayer(request.form["player_id"])
-        return "SUCCESS"
-    else:
-        return "FAIL"
-
 @app.route("/create", methods=["POST"])
 def createGame():
     if request.method == "POST":
@@ -86,6 +78,7 @@ def qryGame():
         if dbIsSession(game_id, player_id):
             # Initialize the query as a copy of the game's DB record as a dict.
             qry = dict(dbGetGame(game_id))
+            del qry['passwd_hash']
 
             # Add on player information as a dictionary with player_id values
             # as keys mapped to player_names.
@@ -102,7 +95,7 @@ def qryGame():
             player_card_qry = dbRowQry("SELECT (card_id) FROM player_cards \
                     WHERE game_id=? AND player_id=?", game_id, player_id)
             player_cards = [row["card_id"] for row in player_card_qry]
-            game_cards = dbRowQry("SELECT * FROM responses")
+            game_cards = dbRowQry("SELECT (response_id, text) FROM responses")
             card_list = [dict(row) for row in game_cards
                     if row["response_id"] in player_cards]
             qry["cards"] = card_list
@@ -126,7 +119,7 @@ def qryGame():
                     for card in cards:
                         card_text = dbRowQry("SELECT text FROM responses \
                                 WHERE response_id=?", card)[0]["text"]
-                        sub_cards.append({"card_id":card, "text":card_text})
+                        sub_cards.append({"response_id":card, "text":card_text})
 
                     qry["subs"].append({
                         "player_id": row["player_id"],
