@@ -50,7 +50,7 @@ Accepts a GET request, returns all existing games as a list of dictionaries enco
 * `game_id`
 
 Takes a `session_id` as authentication and returns a JSON-encoded data structure with the following layout:
-'''
+```
 Keys:
     game_id: str
     game_name: str
@@ -80,7 +80,7 @@ Keys:
                 Keys:
                     response_id: str
                     text: str (JSON-encoded list of strings)
-'''
+```
 
 /cmd
 ----
