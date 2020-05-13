@@ -10,12 +10,14 @@ Clients interact with the server through HTTP POST requests to the following rou
 
 (This is subject to change. I am planning to remove the /login route and alter the /create and /join routes so that `player_id` values are never used as a form of authentication, and expand the use of `session_id` values accordingly.)
 
+
 /login
 ------
 ### Form data:
 * `player_name`: the connecting client's desired player name.
 
 Registers a new player ID for the user and returns the randomly generated `player_id` value. This is currently a requred step before joining/creating a game, but will probably be phased out.
+
 
 /create
 -------
@@ -26,6 +28,7 @@ Registers a new player ID for the user and returns the randomly generated `playe
 
 Creates a new game and automatically joins the player to the created game. Returns the `game_id` and the player's `session_id`.
 
+
 /join
 -----
 ### Form data:
@@ -34,9 +37,11 @@ Creates a new game and automatically joins the player to the created game. Retur
 
 Joins connecting player to an existing game. Returns a new `session_id`.
 
+
 /games
 ------
 Accepts a GET request, returns all existing games as a list of dictionaries encoded to JSON.
+
 
 /qry
 ----
