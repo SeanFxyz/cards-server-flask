@@ -49,6 +49,7 @@ def checkHost(game_id):
 
 def promptStateSetup(game_id):
 
+    dbClearSubs(game_id)
 
     game_qry = dbGetGame(game_id)
     game_decks = json.loads(game_qry["decks"])

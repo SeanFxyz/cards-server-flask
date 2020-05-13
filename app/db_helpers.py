@@ -64,14 +64,21 @@ def dbGameOver(game_id):
         c.execute("DELETE FROM ? WHERE game_id=?", table, game_id)
 
     conn.commit()
-    conn.close
+    conn.close()
 
 def dbGetPlayers(game_id):
     qry = dbRowQry("SELECT * FROM players WHERE game_id=?", game_id)
 
+def dbClearSubs(game_id):
+    conn = connect()
+    c = conn.cursor()
+    c.execute("DELETE FROM submissions WHERE game_id=?", (game_id,))
+    conn.commit()
+    conn.close()
+
 def dbPlayerName(player_id):
     player_name = dbQry("SELECT player_name FROM players WHERE player_id=?",
-            player_id)[0]
+            player_id)[0][0]
     return player_name
 
 def dbAddPlayer(player_name):

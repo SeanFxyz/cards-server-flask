@@ -126,7 +126,6 @@ def qryGame():
                     for card in cards:
                         card_text = dbRowQry("SELECT text FROM responses \
                                 WHERE response_id=?", card)[0]["text"]
-                        card_text = json.loads(card_text)
                         sub_cards.append({"card_id":card, "text":card_text})
 
                     qry["subs"].append({
@@ -214,6 +213,8 @@ def command():
             if game["czar"] != player_id:
                 return "FAIL\nYou are not the czar."
             
-            clearSubs()
+
             sel = args[0]
             dbUpdateGame(game_id,{"selection":sel, "state":State.DISPLAY.value})
+
+            return "SUCCESS"
